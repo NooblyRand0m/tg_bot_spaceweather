@@ -10,20 +10,20 @@ bot = Bot(token=os.getenv('TOKEN'))
 dp = Dispatcher(bot)
 
 
-async def check_kp_index():
+async def check_kp_index(chat_id):
     while True:
         kp_index = get_geo_activity()[0]
         if kp_index >= 5:
-            await bot.send_message(chat_id='YOUR_CHAT_ID', text=f'Warning: KP index is {kp_index}!')
-        await asyncio.sleep(21600)
+            await bot.send_message(chat_id=chat_id, text=f'Warning: KP index is {kp_index}!')
+        await asyncio.sleep(10800)
 
 
-async def check_solar_activity():
+async def check_solar_activity(chat_id):
     while True:
         sunspot_class = sunspot_handler()[0]
         if sunspot_class.startswith('M') or sunspot_class.startswith('X'):
-            await bot.send_message(chat_id='YOUR_CHAT_ID', text=f'Warning: sunspot class is {sunspot_class}!')
-        await asyncio.sleep(21600)
+            await bot.send_message(chat_id=chat_id, text=f'Warning: sunspot class is {sunspot_class}!')
+        await asyncio.sleep(10800)
 
 
 @dp.message_handler(commands=['start'])
@@ -64,14 +64,16 @@ async def kp_handler(message: types.Message):
 
 @dp.message_handler(commands=['kp_notify'])
 async def kp_notify_handler(message: types.Message):
-    await message.reply('You will receive notifications when KP index is 5 or higher.')
-    asyncio.ensure_future(check_kp_index())
+    chat_id = message.chat.id
+    await message.reply(f'You will receive notifications when KP index is 5 or higher in private messages.')
+    asyncio.ensure_future(check_kp_index(chat_id))
 
 
 @dp.message_handler(commands=['flare_notify'])
 async def solar_activity_notify_handler(message: types.Message):
+    chat_id = message.chat.id
     await message.reply('You will receive notifications when solar flare of class M or X is detected.')
-    asyncio.ensure_future(check_solar_activity())
+    asyncio.ensure_future(check_solar_activity(chat_id))
 
 
 if __name__ == '__main__':
